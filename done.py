@@ -1,0 +1,95 @@
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
+
+TOKEN = "8781619684:AAHlJd2wfYC02MYuj7iE88LU3kLWdVRAeV4"
+ADMIN_ID = 8441503873
+
+# ✅ START COMMAND
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+
+    # Save user
+    try:
+        with open("users.txt", "r") as f:
+            users = f.read().splitlines()
+    except:
+        users = []
+
+    if str(user_id) not in users:
+        with open("users.txt", "a") as f:
+            f.write(str(user_id) + "\n")
+
+    # Buttons
+    keyboard = [
+        [InlineKeyboardButton("📋 Register / Download App", url="https://app-web.rdonepay.com/regist?code=0ardonepbz85")],
+        [InlineKeyboardButton("🎓 Beginner Tutorials", url="https://app-web.rdonepay.com/regist?code=0ardonepbz85")],
+        [InlineKeyboardButton("📢 Join Official Channel", url="https://t.me/+IHAtHCnBvqM2ZDY1")],
+        [InlineKeyboardButton("👨‍💼 Contact HR", url="https://t.me/emma_done")]
+    ]
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    # Send poster + message
+    await update.message.reply_photo(
+        photo=open("poster.png", "rb"),
+        caption=(
+            "🚀 *Welcome to Donepay Bot* 🚀\n\n"
+            "💼 Smart Payment Gateway Platform\n"
+            "🔄 Buy & Sell Orders Easily\n"
+            "💰 Earn Commission on Transactions\n"
+            "💱 USDT Exchange Available (Market Based Rates)\n\n"
+            "⚡ Fast | Secure | User-Friendly\n\n"
+            "👇 Choose an option below:"
+        ),
+        parse_mode="Markdown",
+        reply_markup=reply_markup
+    )
+
+# ✅ AUTO REPLY (FOR ANY MESSAGE)
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_text = update.message.text
+    user_id = update.effective_user.id
+
+    print(f"User {user_id}: {user_text}")
+
+    # Reply with your contact
+    await update.message.reply_text(
+        "👨‍💼 Contact HR:\nhttps://t.me/emma_done"
+    )
+
+    # Forward message to admin
+    await context.bot.send_message(
+        chat_id=ADMIN_ID,
+        text=f"📩 User {user_id} says:\n{user_text}"
+    )
+
+# ✅ BROADCAST COMMAND
+async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != ADMIN_ID:
+        return
+
+    message = " ".join(context.args)
+
+    try:
+        with open("users.txt", "r") as f:
+            users = f.read().splitlines()
+    except:
+        users = []
+
+    for user in users:
+        try:		
+            await context.bot.send_message(chat_id=int(user), text=message)
+        except:
+            pass
+
+    await update.message.reply_text("✅ Broadcast sent!")
+
+# ✅ MAIN APP
+app = ApplicationBuilder().token(TOKEN).build()
+
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CommandHandler("broadcast", broadcast))
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+
+print("Bot running...")
+app.run_polling()
