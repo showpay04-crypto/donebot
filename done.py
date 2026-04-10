@@ -1,7 +1,8 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
 
-TOKEN = "8781619684:AAHlJd2wfYC02MYuj7iE88LU3kLWdVRAeV4"
+import os
+TOKEN = os.getenv("TOKEN")
 ADMIN_ID = 8441503873
 
 # ✅ START COMMAND
